@@ -1,0 +1,364 @@
+<div class="reservations-container" 
+     [class.text-right]="isRtl" 
+     [class.text-left]="!isRtl">
+
+  <!-- Success Toast -->
+  @if (showSuccess) {
+    <div class="success-toast">
+      <span class="material-symbols-outlined">check_circle</span>
+      Reservation Created Successfully
+    </div>
+  }
+
+  <!-- Header Section -->
+  <div class="header-section" 
+       [class.flex-row-reverse]="isRtl">
+    <div class="header-content">
+      <h1 class="header-title">
+        {{ getTranslation('title') }}
+      </h1>
+      <p class="header-subtitle">
+        {{ getTranslation('sub') }}
+      </p>
+    </div>
+    
+    <div class="header-actions" [class.items-start]="isRtl">
+      <!-- View Mode Toggle -->
+      <div class="view-mode-toggle">
+        @for (mode of viewModes; track mode.type) {
+          <button (click)="setViewMode(mode.type)" 
+                  [class]="getButtonClasses(mode.type)"
+                  [class.flex-row-reverse]="isRtl">
+            <span class="material-symbols-outlined view-mode-icon">
+              {{ mode.type === 'list' ? 'list' : 'calendar_view_day' }}
+            </span>
+            {{ getViewModeLabel(mode.type) }}
+          </button>
+        }
+      </div>
+
+      <!-- New Reservation Button -->
+      <button (click)="openModal()"
+              class="new-reservation-button">
+        {{ getTranslation('newRes') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="filter-row" [class.flex-row-reverse]="isRtl">
+      <!-- Search Input -->
+      <div class="input-group">
+        <label class="input-label">
+          {{ getTranslation('search') }}
+        </label>
+        <div class="search-container">
+          <span class="material-symbols-outlined search-icon"
+                [class.right-6]="isRtl"
+                [class.left-6]="!isRtl">
+            search
+          </span>
+          <input [(ngModel)]="searchTerm"
+                 (ngModelChange)="onSearchChange()"
+                 [class.pr-16]="isRtl"
+                 [class.pl-16]="!isRtl"
+                 [class.pl-6]="isRtl"
+                 [class.pr-6]="!isRtl"
+                 [class.text-right]="isRtl"
+                 [class.text-left]="!isRtl"
+                 class="search-input" 
+                 placeholder="Guest name or ID..." />
+        </div>
+      </div>
+
+      <!-- Status Filter -->
+      <div class="input-group">
+        <label class="input-label">
+          {{ getTranslation('statusAll') }}
+        </label>
+        <div class="status-container">
+          <select [(ngModel)]="statusFilter"
+                  (ngModelChange)="onStatusChange()"
+                  [class.pr-6]="isRtl"
+                  [class.pl-6]="!isRtl"
+                  [class.pl-12]="isRtl"
+                  [class.pr-12]="!isRtl"
+                  [class.text-right]="isRtl"
+                  [class.text-left]="!isRtl"
+                  class="status-select">
+            @for (status of statusOptions; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
+          <span class="material-symbols-outlined expand-icon"
+                [class.left-6]="isRtl"
+                [class.right-6]="!isRtl">
+            expand_more
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="action-button">
+          {{ getTranslation('apply') }}
+        </button>
+        <button (click)="clearFilters()"
+                class="clear-button">
+          <span class="material-symbols-outlined clear-icon">refresh</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main View Container -->
+  <div class="main-view-container">
+    @if (viewMode === 'list') {
+      <!-- List View -->
+      <div class="list-view">
+        <table class="reservations-table">
+          <thead>
+            <tr class="table-header"
+                [class.text-right]="isRtl"
+                [class.text-left]="!isRtl">
+              <th class="table-cell">Guest & ID</th>
+              <th class="table-cell">Room Type</th>
+              <th class="table-cell">Duration</th>
+              <th class="table-cell">State</th>
+              <th class="table-cell">Pricing</th>
+            </tr>
+          </thead>
+          <tbody class="table-body">
+            @if (filteredReservations.length === 0) {
+              <tr>
+                <td colspan="5" class="no-results-cell">
+                  {{ getTranslation('noResults') }}
+                </td>
+              </tr>
+            }
+            
+            @for (res of filteredReservations; track res.id) {
+              <tr class="reservation-row">
+                <!-- Guest Info -->
+                <td class="table-cell">
+                  <div class="guest-cell" [class.flex-row-reverse]="isRtl">
+                    <div class="guest-avatar">
+                      {{ getInitials(res.guestName) }}
+                    </div>
+                    <div class="guest-info">
+                      <p>{{ res.guestName }}</p>
+                      <p>{{ res.id }}</p>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Room Type -->
+                <td class="table-cell room-cell">{{ res.roomType }}</td>
+
+                <!-- Duration -->
+                <td class="table-cell duration-cell">
+                  <p>{{ formatDateDisplay(res.checkIn) }}</p>
+                  <p>
+                    to {{ formatDateDisplay(res.checkOut) }}
+                  </p>
+                </td>
+
+                <!-- Status -->
+                <td class="table-cell status-cell">
+                  <span [ngClass]="getStatusClass(res.status) + ' ' + getStatusBorderClass(res.status)">
+                    {{ res.status }}
+                  </span>
+                </td>
+
+                <!-- Price & Actions -->
+                <td class="table-cell pricing-cell">
+                  <span class="pricing-amount">SAR {{ res.price }}</span>
+                  <div class="action-buttons-cell">
+                    <button class="edit-button"
+                            [title]="isRtl ? 'تعديل' : 'Edit'">
+                      <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button (click)="deleteReservation(res.id)"
+                            class="delete-button"
+                            [title]="isRtl ? 'حذف' : 'Delete'">
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <!-- Timeline View -->
+      <div class="timeline-view">
+        <div class="timeline-content">
+          <!-- Room Types Sidebar -->
+          <div class="timeline-sidebar">
+            <div class="sidebar-header">
+              <span class="sidebar-title">Inventory Units</span>
+            </div>
+            <div class="room-list">
+              @for (type of roomTypes; track type) {
+                <div class="room-item">
+                  {{ type }}
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Timeline Grid -->
+          <div class="timeline-grid">
+            <!-- Date Headers -->
+            <div class="date-headers">
+              @for (date of timelineDates; track date) {
+                <div class="date-header">
+                  <span class="date-day">
+                    {{ date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase() }}
+                  </span>
+                  <span class="date-number">{{ date.getDate() }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Timeline Rows -->
+            <div class="timeline-rows">
+              @for (type of roomTypes; track type) {
+                <div class="timeline-row">
+                  <!-- Grid Cells -->
+                  @for (_ of timelineDates; track $index) {
+                    <div class="grid-cell"></div>
+                  }
+
+                  <!-- Reservations -->
+                  @for (reservation of getFilteredReservationsByRoomType(type); track reservation.id) {
+                    @let pos = getTimelinePosition(reservation.checkIn, reservation.checkOut);
+                    <div class="reservation-block"
+                         [ngClass]="getTimelineColorClass(reservation.status)"
+                         [style.left.px]="pos.offset * 128"
+                         [style.width.px]="pos.width * 128"
+                         (click)="editReservation(reservation.id)">
+                      <div class="reservation-content">
+                        <span class="material-symbols-outlined reservation-icon">check_circle</span>
+                        <p class="reservation-name">{{ reservation.guestName }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- New Reservation Modal -->
+  @if (isModalOpen) {
+    <div class="modal-overlay"
+         (click)="closeModal($event)">
+      <div class="modal-content">
+        
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h3 class="modal-title">Add Reservation</h3>
+          <button class="close-button" (click)="closeModal()">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Form -->
+        <form class="modal-form" [formGroup]="reservationForm" (ngSubmit)="createReservation()">
+          <!-- Guest Name -->
+          <div class="form-group">
+            <label class="form-label">
+              Guest Full Name
+            </label>
+            <input class="form-input"
+                   formControlName="guestName"
+                   placeholder="e.g. Michael Jordan" 
+                   type="text" />
+            @if (guestName?.invalid && guestName?.touched) {
+              <p class="error-message">Guest name is required</p>
+            }
+          </div>
+          
+          <!-- Room Type & Price -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">
+                Room Category
+              </label>
+              <select class="form-select"
+                      formControlName="roomType">
+                <option value="Deluxe Double Room">Deluxe Double Room</option>
+                <option value="Deluxe Two Bedroom Suite">Deluxe Two Bedroom Suite</option>
+                <option value="Deluxe One Bedroom Suite">Deluxe One Bedroom Suite</option>
+                <option value="Executive Studio">Executive Studio</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Total Pricing (SAR)
+              </label>
+              <input class="form-input"
+                     formControlName="price"
+                     type="number" />
+              @if (price?.invalid && price?.touched) {
+                <p class="error-message">Price must be at least 1 SAR</p>
+              }
+            </div>
+          </div>
+
+          <!-- Check-in & Check-out Dates -->
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">
+                Check-in Date
+              </label>
+              <input class="form-input"
+                     formControlName="checkIn"
+                     type="date" />
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Check-out Date
+              </label>
+              <input class="form-input"
+                     formControlName="checkOut"
+                     type="date" />
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="form-group">
+            <label class="form-label">
+              Status
+            </label>
+            <select class="form-select"
+                    formControlName="status">
+              <option value="Confirmed">Confirmed</option>
+              <option value="Pending">Pending</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <!-- Submit Button -->
+          <button class="submit-button" 
+                  type="submit" 
+                  [disabled]="reservationForm.invalid || isCreating">
+            @if (isCreating) {
+              <span class="loading-spinner">refresh</span>
+            } @else {
+              Commit Reservation
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  }
+</div>

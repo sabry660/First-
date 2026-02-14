@@ -1,0 +1,312 @@
+<div class="rate-plans-container">
+<header class="rate-plans-header">
+    <div>
+      <h1 class="page-title">Rate Plans Management</h1>
+      <p class="page-subtitle">
+        Configure pricing strategies to maximize occupancy and revenue.
+      </p>
+    </div>
+    <button 
+      (click)="openModal()"
+      class="create-plan-button">
+      <span class="material-symbols-outlined">add</span>
+      Create New Plan
+    </button>
+  </header>
+
+  <!-- Stats Summary -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-content">
+        <div class="stat-info">
+          <p class="stat-label">Total Plans</p>
+          <p class="stat-value">{{ plans.length }}</p>
+        </div>
+        <div class="stat-icon-container">
+          <span class="material-symbols-outlined stat-icon">monetization_on</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-active">
+      <div class="stat-content">
+        <div class="stat-info">
+          <p class="stat-label">Active Plans</p>
+          <p class="stat-value">{{ getActiveCount() }}</p>
+        </div>
+        <div class="stat-icon-container">
+          <span class="material-symbols-outlined stat-icon">check_circle</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-paused">
+      <div class="stat-content">
+        <div class="stat-info">
+          <p class="stat-label">Paused Plans</p>
+          <p class="stat-value">{{ getPausedCount() }}</p>
+        </div>
+        <div class="stat-icon-container">
+          <span class="material-symbols-outlined stat-icon">pause_circle</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plans Grid -->
+  <div class="plans-grid">
+    @for (plan of plans; track plan.id) {
+      <div class="plan-card">
+        <div class="plan-content">
+          <!-- Plan Header -->
+          <div class="plan-header">
+            <div class="plan-info">
+              <div class="plan-icon-container" [ngClass]="getColorClass(plan.color)">
+                <span class="material-symbols-outlined">{{ plan.icon }}</span>
+              </div>
+              <div>
+                <h3 class="plan-name">
+                  {{ plan.name }}
+                </h3>
+                <p class="plan-id">ID: {{ plan.id }}</p>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="plan-actions">
+              <button 
+                (click)="togglePlanStatus(plan.id)"
+                [title]="plan.status === 'Active' ? 'Pause Plan' : 'Activate Plan'"
+                class="status-button"
+                [ngClass]="getStatusClass(plan.status)">
+                {{ plan.status }}
+              </button>
+              
+              <div class="relative group">
+                <button class="menu-button">
+                  <span class="material-symbols-outlined">more_vert</span>
+                </button>
+                
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu">
+                  <button (click)="openModal(plan)" 
+                          class="dropdown-item">
+                    <span class="material-symbols-outlined">edit</span>
+                    Edit Plan
+                  </button>
+                  <button (click)="duplicatePlan(plan.id)" 
+                          class="dropdown-item">
+                    <span class="material-symbols-outlined">content_copy</span>
+                    Duplicate
+                  </button>
+                  <button (click)="deletePlan(plan.id)" 
+                          class="dropdown-item delete">
+                    <span class="material-symbols-outlined">delete</span>
+                    Delete Plan
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Plan Description -->
+          <p class="plan-description">
+            {{ plan.description }}
+          </p>
+
+          <!-- Features -->
+          <div class="features-list">
+            @for (feature of plan.features; track $index) {
+              <div class="feature-item">
+                <span class="material-symbols-outlined feature-icon" [ngClass]="{'feature-warning': feature.toLowerCase().includes('no refund')}">
+                  {{ feature.toLowerCase().includes('no refund') ? 'warning' : 'verified_user' }}
+                </span>
+                <span class="feature-text" [ngClass]="{'feature-warning': feature.toLowerCase().includes('no refund')}">
+                  {{ feature }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="plan-footer">
+          <div class="footer-info">
+            <span class="footer-label">Pricing Strategy</span>
+            <p class="footer-value">{{ plan.strategy }}</p>
+          </div>
+          <button (click)="viewRules(plan.id)" 
+                  class="rules-button">
+            <span class="material-symbols-outlined">edit_square</span>
+            Rules
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Add New Card -->
+    <div class="add-new-card" (click)="openModal()">
+      <div class="add-icon-container">
+        <span class="add-icon">add</span>
+      </div>
+      <h3 class="add-title">
+        Add New Rate Plan
+      </h3>
+      <p class="add-description">
+        Design a new pricing rule for specific dates or guest segments.
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <div class="footer-stats">
+      <span class="footer-stat">
+        <span class="footer-dot active"></span>
+        {{ getActiveCount() }} Active Plans
+      </span>
+      <span class="footer-stat">
+        <span class="footer-dot paused"></span>
+        {{ getPausedCount() }} Paused Plans
+      </span>
+    </div>
+    <div class="footer-links">
+      <button (click)="openGuide()" 
+              class="footer-link">
+        <span class="material-symbols-outlined">menu_book</span>
+        Strategy Guide
+      </button>
+      <button (click)="openRevenueTools()" 
+              class="footer-link">
+        <span class="material-symbols-outlined">extension</span>
+        Revenue Tools
+      </button>
+    </div>
+  </footer>
+
+  <!-- Create/Edit Plan Modal -->
+  @if (isModalOpen) {
+    <div class="modal-overlay" (click)="closeModal($event)">
+      <div class="modal-content">
+        
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h3 class="modal-title">
+            {{ editingPlan ? 'Edit Rate Plan' : 'New Rate Plan' }}
+          </h3>
+          <button (click)="closeModal()" 
+                  class="modal-close">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Form -->
+        <form [formGroup]="planForm" (ngSubmit)="savePlan()" class="modal-form">
+          <!-- Plan Name -->
+          <div class="form-group">
+            <label class="form-label">
+              Plan Name
+            </label>
+            <input 
+              formControlName="name"
+              class="form-input" 
+              placeholder="e.g. Winter Holiday Saver" 
+              type="text"
+              autofocus />
+            @if (planForm.get('name')?.invalid && planForm.get('name')?.touched) {
+              <p class="error-message">Plan name is required</p>
+            }
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label class="form-label">
+              Description
+            </label>
+            <textarea 
+              formControlName="description"
+              class="form-textarea" 
+              placeholder="Describe the target audience or inclusion..."></textarea>
+          </div>
+
+          <!-- Pricing Strategy -->
+          <div class="form-group">
+            <label class="form-label">
+              Pricing Strategy
+            </label>
+            <select 
+              formControlName="strategy"
+              class="form-select">
+              @for (strategy of strategies; track strategy.value) {
+                <option [value]="strategy.value">{{ strategy.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Status -->
+          <div class="form-group">
+            <label class="form-label">
+              Status
+            </label>
+            <div class="form-radio-group">
+              <label class="radio-label">
+                <input type="radio" formControlName="status" value="Active" 
+                       class="form-radio" />
+                <span class="radio-text">Active</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" formControlName="status" value="Paused" 
+                       class="form-radio" />
+                <span class="radio-text">Paused</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Features -->
+          <div class="form-group">
+            <label class="form-label">
+              Features (one per line)
+            </label>
+            <textarea 
+              formControlName="features"
+              class="form-textarea" 
+              placeholder="Enter features, one per line..."></textarea>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-4">
+            <button type="submit" 
+                    [disabled]="isSaving"
+                    class="submit-button">
+              @if (isSaving) {
+                <span class="material-symbols-outlined animate-spin">refresh</span>
+              } @else if (editingPlan) {
+                Update Rate Plan
+              } @else {
+                Initialize Rate Plan
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (plans.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon-container">
+        <span class="empty-icon">monetization_on</span>
+      </div>
+      <h3 class="empty-title">No Rate Plans Yet</h3>
+      <p class="empty-description">
+        Create your first rate plan to start managing pricing strategies and maximizing revenue.
+      </p>
+      <button (click)="openModal()"
+              class="empty-button">
+        <span class="material-symbols-outlined">add</span>
+        Create First Rate Plan
+      </button>
+    </div>
+  }
+</div>

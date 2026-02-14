@@ -1,0 +1,166 @@
+<div class="notifications-container">
+  <!-- Left Pane: Feed -->
+  <div class="notifications-left-pane">
+    <div class="notifications-header">
+      <h2 class="notifications-title">Notifications Center</h2>
+      <div class="notifications-filters">
+        <button 
+          class="filter-button active"
+          (click)="filterNotifications('all')">
+          All ({{ filteredNotifications.length }})
+        </button>
+        <button 
+          class="filter-button"
+          (click)="filterNotifications('unread')">
+          Unread
+        </button>
+        <button 
+          class="filter-button urgent-filter"
+          (click)="filterNotifications('urgent')">
+          Urgent 
+          <span class="urgent-badge">
+            {{ urgentCount }}
+          </span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="notifications-feed">
+      @if (filteredNotifications.length > 0) {
+        @for (note of filteredNotifications; track note.id) {
+          <div 
+            (click)="selectNotification(note.id)"
+            class="notification-item"
+            [class.selected]="selectedId === note.id">
+            
+            @if (selectedId === note.id) {
+              <div class="notification-indicator"></div>
+            }
+            
+            <div class="notification-icon"
+                 [ngClass]="getNotificationIconClass(note.type)">
+              <span class="material-symbols-outlined">{{ note.icon }}</span>
+            </div>
+            
+            <div class="notification-content">
+              <div class="notification-header">
+                <p class="notification-title"
+                   [class.selected]="selectedId === note.id">
+                  {{ note.title }}
+                </p>
+                <span class="notification-time">{{ note.time }}</span>
+              </div>
+              <p class="notification-body">{{ note.body }}</p>
+            </div>
+            
+            @if (note.active) {
+              <div class="notification-active">
+                <div class="notification-dot"
+                     [class.urgent]="note.type === 'urgent'"></div>
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <div class="no-notifications">No notifications found</div>
+      }
+    </div>
+  </div>
+
+  <!-- Right Pane: Detail View -->
+  @if (selectedNotification) {
+    <div class="notifications-detail">
+      <div class="detail-container">
+        <!-- Header -->
+        <div class="detail-header">
+          <div>
+            <div class="detail-type-badge"
+                 [class.urgent]="selectedNotification.type === 'urgent'">
+              @if (selectedNotification.type === 'urgent') {
+                <span>!</span>
+              }
+              {{ selectedNotification.type === 'urgent' ? 'URGENT ALERT' : 'SYSTEM NOTIFICATION' }}
+            </div>
+            <h3 class="detail-title">
+              {{ selectedNotification.title }}
+            </h3>
+            <p class="detail-meta">
+              {{ selectedNotification.date }} • ID: {{ selectedNotification.id_ref }}
+            </p>
+          </div>
+          
+          <div class="detail-actions">
+            <button (click)="archiveNotification()" 
+                    class="detail-action-button archive">
+              <span class="material-symbols-outlined">archive</span>
+            </button>
+            <button (click)="deleteNotification()" 
+                    class="detail-action-button delete">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="detail-content">
+          <p class="detail-body">
+            {{ selectedNotification.body }}
+          </p>
+          
+          <!-- Status & Priority -->
+          <div class="detail-status-section">
+            <div class="status-item">
+              <p class="status-label">STATUS</p>
+              <p class="status-value">{{ selectedNotification.status }}</p>
+            </div>
+            <div class="status-divider"></div>
+            <div class="status-item">
+              <p class="status-label">PRIORITY</p>
+              <p class="status-value"
+                 [class.urgent]="selectedNotification.type === 'urgent'">
+                {{ selectedNotification.priority }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Recommendation -->
+          <p class="detail-recommendation">
+            Recommendation: Please review and take appropriate action to ensure optimal system performance and customer satisfaction.
+          </p>
+        </div>
+
+        <!-- Suggested Actions -->
+        <div class="suggested-actions">
+          <h4 class="suggested-actions-title">
+            <span class="material-symbols-outlined">auto_awesome</span>
+            Suggested Actions
+          </h4>
+          
+          <div class="actions-grid">
+            <button (click)="proceedWithRecommendation()"
+                    class="action-button-primary">
+              <span>Proceed with Recommendation</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+            
+            <button (click)="viewContextualData()"
+                    class="action-button-secondary">
+              <span>View Contextual Data</span>
+              <span class="material-symbols-outlined">grid_view</span>
+            </button>
+          </div>
+
+          <button (click)="snoozeAlert()"
+                  class="snooze-button">
+            Snooze alert for 1 hour
+          </button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <!-- Empty State -->
+    <div class="empty-state">
+      <p class="empty-message">Select a notification to view details</p>
+    </div>
+  }
+</div>

@@ -1,0 +1,221 @@
+<div class="profile-container animate-in fade-in duration-500">
+  <!-- Header -->
+  <div class="profile-header">
+    <h1 class="profile-title">User Profile Settings</h1>
+    
+    @if (showSuccess) {
+      <div class="success-toast">
+        Changes applied locally
+      </div>
+    }
+  </div>
+
+  <!-- Profile Header Card -->
+  <div class="profile-card">
+    <div class="profile-card-content">
+      <!-- Profile Image -->
+      <div class="profile-image-container">
+        <div class="profile-image-wrapper">
+          <img [src]="profile.profileImage" alt="Profile" class="profile-image" />
+        </div>
+        
+        <!-- Camera Button -->
+        <button 
+          (click)="triggerFileUpload()"
+          class="camera-button">
+          <span class="material-symbols-outlined">photo_camera</span>
+        </button>
+        
+        <!-- Hidden File Input -->
+        <input 
+          #fileInput
+          type="file" 
+          (change)="onImageUpload($event)"
+          class="hidden" 
+          accept="image/*" />
+      </div>
+
+      <!-- Profile Info -->
+      <div class="profile-info">
+        <div class="profile-name-section">
+          <h3 class="profile-name">
+            {{ profile.firstName }} {{ profile.lastName }}
+          </h3>
+          <span class="status-badge">
+            ACTIVE MANAGER
+          </span>
+        </div>
+        
+        <p class="profile-subtitle">
+          {{ profile.jobTitle }} • Admin ID: <span class="text-primary">{{ profile.adminId }}</span>
+        </p>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button 
+            (click)="triggerFileUpload()"
+            class="change-avatar-button">
+            Change Avatar
+          </button>
+          <button 
+            (click)="resetDefaultImage()"
+            class="reset-button">
+            Reset Default
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Identity & Connectivity Form -->
+  <div class="identity-card">
+    <div class="card-header">
+      <h4 class="card-title">Identity & Connectivity</h4>
+      <p class="card-subtitle">
+        Manage your personal credentials and system identifiers.
+      </p>
+    </div>
+    
+    <!-- Profile Form -->
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+      <!-- First Name -->
+      <div class="form-group">
+        <label class="form-label">
+          FIRST NAME
+        </label>
+        <input 
+          formControlName="firstName"
+          class="form-input"
+          type="text" 
+          placeholder="mo" />
+        @if (profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched) {
+          <p class="error-message">First name is required</p>
+        }
+      </div>
+
+      <!-- Last Name -->
+      <div class="form-group">
+        <label class="form-label">
+          LAST NAME
+        </label>
+        <input 
+          formControlName="lastName"
+          class="form-input"
+          type="text" 
+          placeholder="Johnson" />
+        @if (profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched) {
+          <p class="error-message">Last name is required</p>
+        }
+      </div>
+
+      <!-- Email -->
+      <div class="form-group form-full-width">
+        <label class="form-label">
+          EMAIL ADDRESS
+        </label>
+        <input 
+          formControlName="email"
+          class="form-input"
+          type="email" />
+        @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+          <p class="error-message">Please enter a valid email</p>
+        }
+      </div>
+
+      <!-- Additional Fields -->
+      <!-- Job Title -->
+      <div class="form-group">
+        <label class="form-label">
+          JOB TITLE
+        </label>
+        <input 
+          formControlName="jobTitle"
+          class="form-input"
+          type="text" 
+          placeholder="Hotel Manager" />
+      </div>
+
+      <!-- Phone Number -->
+      <div class="form-group">
+        <label class="form-label">
+          PHONE NUMBER
+        </label>
+        <input 
+          formControlName="phoneNumber"
+          class="form-input"
+          type="tel" 
+          placeholder="+1 (555) 123-4567" />
+      </div>
+
+      <!-- Form Footer -->
+      <div class="form-footer">
+        <!-- Password Reset Link -->
+        <button type="button" 
+                (click)="requestPasswordReset()"
+                class="reset-link">
+          <span class="material-symbols-outlined">lock_reset</span>
+          Request Password Reset
+        </button>
+
+        <!-- Save Button -->
+        <button 
+          type="submit"
+          [disabled]="profileForm.invalid || isSaving"
+          class="save-button">
+          @if (isSaving) {
+            <span class="material-symbols-outlined">refresh</span>
+            Synchronizing...
+          } @else {
+            <span class="material-symbols-outlined">save</span>
+            Commit Changes
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="danger-card">
+    <div class="danger-content">
+      <div class="danger-header">
+        <span class="danger-icon">warning</span>
+        <h4 class="danger-title">Danger Zone</h4>
+      </div>
+      <p class="danger-subtitle">
+        Irreversible actions. Proceed with caution.
+      </p>
+      
+      <div class="danger-actions">
+        <button 
+          (click)="deactivateAccount()"
+          class="danger-button">
+          <div class="danger-button-content">
+            <div class="danger-button-icon">
+              <span class="material-symbols-outlined">person_remove</span>
+            </div>
+            <div>
+              <p class="danger-button-text">Deactivate Account</p>
+              <p class="danger-button-desc">Temporarily disable your account</p>
+            </div>
+          </div>
+          <span class="danger-arrow">arrow_forward</span>
+        </button>
+
+        <button 
+          (click)="deleteAccount()"
+          class="danger-button">
+          <div class="danger-button-content">
+            <div class="danger-button-icon">
+              <span class="material-symbols-outlined">delete_forever</span>
+            </div>
+            <div>
+              <p class="danger-button-text">Delete Account Permanently</p>
+              <p class="danger-button-desc">All data will be removed immediately</p>
+            </div>
+          </div>
+          <span class="danger-arrow">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

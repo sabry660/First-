@@ -1,0 +1,391 @@
+<div class="system-settings-container animate-in fade-in">
+  
+  <!-- Success Toast -->
+  @if (showSuccess) {
+    <div class="success-toast">
+      <span class="material-symbols-outlined">check_circle</span>
+      Settings Saved Successfully
+    </div>
+  }
+
+  <!-- Header Section -->
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">
+        System Configuration
+      </h1>
+      <p class="page-description">
+        Centralized management for your hotel inventory, notifications, and integration parameters across all distribution platforms.
+      </p>
+    </div>
+    
+    <div class="header-actions">
+      <button (click)="discardChanges()"
+        class="btn-discard">
+        Discard
+      </button>
+      
+      <button (click)="saveSettings()"
+              [disabled]="isSaving"
+              class="btn-save">
+        @if (isSaving) {
+          <span class="material-symbols-outlined animate-spin">refresh</span>
+          Saving...
+        } @else {
+          <span class="material-symbols-outlined">save</span>
+          Save Changes
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs & Search -->
+  <div class="tabs-search-section">
+    
+    <!-- Tabs -->
+    <div class="tabs-container">
+      @for (tab of tabs; track tab.id) {
+        <button (click)="setActiveTab(tab.id)"
+                [class]="getTabClass(tab.id)">
+          <span class="material-symbols-outlined text-2xl">{{ tab.icon }}</span>
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Search -->
+    <div class="search-container">
+      <span class="search-icon">
+        search
+      </span>
+      <input [(ngModel)]="searchTerm"
+             (ngModelChange)="onSearchChange()"
+             class="search-input" 
+             placeholder="Search within settings..." />
+      @if (searchTerm) {
+        <button (click)="clearSearch()" class="search-clear-btn">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content-grid">
+    
+    <!-- Left Column (Main Settings) -->
+    <div class="left-column">
+      
+      <!-- General Tab -->
+      @if (activeTab === 'general') {
+        <section class="settings-section rounded-large">
+          
+          <!-- Header -->
+          <div class="section-header">
+            <h2 class="section-title">
+              Hotel Business Profile
+            </h2>
+            <p class="section-description">
+              Update establishment details for reporting and public records.
+            </p>
+          </div>
+
+          <!-- Form -->
+          <form [formGroup]="settingsForm" class="settings-form">
+            
+            <!-- Hotel Name -->
+            <div class="form-group">
+              <label class="form-label">
+                Hotel Name
+              </label>
+              <input formControlName="hotelName"
+                     class="form-input" 
+                     type="text" />
+              @if (hotelName?.invalid && hotelName?.touched) {
+                <p class="form-error">Hotel name is required</p>
+              }
+            </div>
+
+            <!-- Primary Email -->
+            <div class="form-group">
+              <label class="form-label">
+                Primary Email
+              </label>
+              <input formControlName="primaryEmail"
+                     class="form-input" 
+                     type="email" />
+              @if (primaryEmail?.invalid && primaryEmail?.touched) {
+                <p class="form-error">Please enter a valid email</p>
+              }
+            </div>
+
+            <!-- Phone Number -->
+            <div class="form-group">
+              <label class="form-label">
+                Phone Number
+              </label>
+              <input formControlName="phoneNumber"
+                     class="form-input" 
+                     type="text" />
+              @if (phoneNumber?.invalid && phoneNumber?.touched) {
+                <p class="form-error">Phone number is required</p>
+              }
+            </div>
+
+            <!-- Timezone -->
+            <div class="form-group">
+              <label class="form-label">
+                Timezone
+              </label>
+              <select formControlName="timezone"
+                      class="form-input">
+                <option value="(GMT+03:00) Riyadh">(GMT+03:00) Riyadh</option>
+                <option value="(GMT+00:00) London">(GMT+00:00) London</option>
+                <option value="(GMT-05:00) NYC">(GMT-05:00) NYC</option>
+              </select>
+              @if (timezone?.invalid && timezone?.touched) {
+                <p class="form-error">Timezone is required</p>
+              }
+            </div>
+
+            <!-- Full Address -->
+            <div class="form-group form-group-full">
+              <label class="form-label">
+                Full Address
+              </label>
+              <textarea formControlName="fullAddress"
+                        rows="4"
+                        class="form-input form-textarea"></textarea>
+              @if (fullAddress?.invalid && fullAddress?.touched) {
+                <p class="form-error">Address is required</p>
+              }
+            </div>
+
+          </form>
+        </section>
+      }
+
+      <!-- Notifications Tab -->
+      @if (activeTab === 'notifications') {
+        <section class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+          
+          <!-- Header -->
+          <div class="section-header">
+            <h2 class="section-title">
+              Communication Channels
+            </h2>
+            <p class="section-description">
+              Configure rules for system-to-staff and system-to-guest messaging.
+            </p>
+          </div>
+
+          <!-- Notifications List -->
+          <div class="notifications-list">
+            @for (item of filteredSettings.notifications; track item.title; let i = $index) {
+              <div class="notification-item">
+                <div class="notification-content">
+                  <p class="notification-title">{{ item.title }}</p>
+                  <p class="notification-description">{{ item.description }}</p>
+                </div>
+                <button (click)="toggleNotification(i)"
+                        class="notification-toggle"
+                        [ngClass]="getToggleClass(item.enabled)">
+                  <div [ngClass]="getToggleKnobClass(item.enabled)"></div>
+                </button>
+              </div>
+            }
+            
+            @if (filteredSettings.notifications.length === 0) {
+              <p class="notification-empty">
+                No notification settings found matching your search.
+              </p>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Integrations Tab -->
+      @if (activeTab === 'integrations') {
+        <section class="integrations-section">
+          
+          <!-- Header -->
+          <div class="integrations-header">
+            <h2 class="section-title">
+              Ecosystem Connections
+            </h2>
+            <button (click)="goToMarketplace()"
+                    class="marketplace-btn">
+              Go to Marketplace
+            </button>
+          </div>
+
+          <!-- Integrations Grid -->
+          <div class="integrations-grid">
+            @for (integration of filteredSettings.integrations; track integration.name) {
+              <div class="integration-card">
+                
+                <!-- Icon & Status -->
+                <div class="integration-header">
+                  <div class="integration-icon"
+                       [ngClass]="getIntegrationIconClass(integration.color)">
+                    <span class="material-symbols-outlined text-4xl">{{ integration.icon }}</span>
+                  </div>
+                  <span class="integration-status"
+                        [ngClass]="getIntegrationStatusClass(integration.status)">
+                    {{ integration.status }}
+                  </span>
+                </div>
+
+                <!-- Details -->
+                <h3 class="integration-title">{{ integration.name }}</h3>
+                <p class="integration-description">
+                  Last synced: Today, 09:44 AM • {{ integration.count }}
+                </p>
+
+                <!-- Action Button -->
+                <button class="integration-action-btn">
+                  Configure Channel Manager
+                </button>
+              </div>
+            }
+            
+            @if (filteredSettings.integrations.length === 0) {
+              <p class="integration-empty">
+                No integrations found matching your search.
+              </p>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Billing Tab -->
+      @if (activeTab === 'billing') {
+        <section class="settings-section">
+          
+          <!-- Plan Header -->
+          <div class="billing-header">
+            <p class="billing-plan-label">
+              Your Current Plan
+            </p>
+            <h2 class="billing-plan-title">
+              Professional Enterprise
+            </h2>
+            <div class="billing-features">
+              <span class="billing-feature">
+                Renewal: Nov 24, 2024
+              </span>
+              <span class="billing-feature">
+                50 Inventory Units Cap
+              </span>
+            </div>
+          </div>
+
+          <!-- Invoices -->
+          <div class="invoices-section">
+            <h3 class="invoices-title">
+              Recent Invoices
+            </h3>
+            
+            <div class="invoices-list">
+              @for (invoice of filteredSettings.billing; track invoice.id) {
+                <div class="invoice-item">
+                  
+                  <!-- Invoice Info -->
+                  <div class="invoice-info">
+                    <div class="invoice-icon">
+                      <span class="material-symbols-outlined">description</span>
+                    </div>
+                    <div>
+                      <p class="invoice-number">{{ invoice.id }}</p>
+                      <p class="invoice-date">{{ invoice.date }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Amount & Status -->
+                  <div class="invoice-details">
+                    <p class="invoice-amount">{{ invoice.amount }}</p>
+                    <span class="invoice-status"
+                          [ngClass]="getInvoiceStatusClass(invoice.status)">
+                      {{ invoice.status }}
+                    </span>
+                  </div>
+                </div>
+              }
+              
+              @if (filteredSettings.billing.length === 0) {
+                <p class="invoice-empty">
+                  No invoice records found matching your search.
+                </p>
+              }
+
+              <!-- Update Payment Method -->
+              <button (click)="updatePaymentMethod()"
+                      class="payment-method-btn">
+                Update Payment Method & Billing Cycle
+              </button>
+            </div>
+
+          </div>
+        </section>
+      }
+    </div>
+
+    <!-- Right Column (Sidebar) -->
+    <div class="right-column">
+      
+      <!-- Priority Notifications -->
+      <section class="priority-section">
+        
+        <!-- Header -->
+        <div class="priority-header">
+          <h2 class="priority-title">
+            Priority Notifications
+          </h2>
+        </div>
+
+        <!-- Alerts List -->
+        <div class="priority-list">
+          @for (alert of priorityAlerts; track alert.label; let i = $index) {
+            <div class="priority-item">
+              <div>
+                <p class="priority-alert-title">{{ alert.label }}</p>
+                <p class="priority-alert-subtitle">{{ alert.subtitle }}</p>
+              </div>
+              <button (click)="togglePriorityAlert(i)"
+                      class="priority-toggle"
+                      [ngClass]="getToggleClass(alert.active)">
+                <div [ngClass]="getPriorityToggleKnobClass(alert.active)"></div>
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Support Card -->
+      <div class="support-card">
+        
+        <!-- Animated Background -->
+        <div class="support-bg"></div>
+        
+        <!-- Icon -->
+        <div class="support-icon">
+          <span class="material-symbols-outlined text-3xl font-black">help_center</span>
+        </div>
+
+        <!-- Content -->
+        <h3 class="support-title">
+          Config Specialist?
+        </h3>
+        <p class="support-description">
+          Our implementation specialists are available via live chat to help you fine-tune these parameters.
+        </p>
+
+        <!-- Action Button -->
+        <button (click)="openSupportTicket()"
+                class="support-btn">
+          Open Support Ticket
+          </button>
+      </div>
+    </div>
+  </div>
+</div>

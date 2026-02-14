@@ -1,0 +1,292 @@
+<div class="bulk-updates-container animate-in fade-in">
+  <!-- Hero Section with Background -->
+  <div class="hero-section">
+    <div class="hero-background" style="background-image: url('https://picsum.photos/seed/bulk-updates-hero/1200/400')"></div>
+    <div class="hero-content">
+      <div class="hero-title">
+        <h1 class="text-4xl font-black dark:text-white tracking-tight">Bulk Inventory Control</h1>
+        <p class="hero-description text-lg">Mass-update availability and pricing rules across your inventory.</p>
+      </div>
+      <div class="hero-actions">
+        <button 
+          (click)="selectedStart=null; selectedEnd=null; selectedRooms=[]"
+          class="btn-reset"
+        >
+          Reset Selection
+        </button>
+        <button 
+          (click)="handleBulkUpdate()"
+          [disabled]="!selectedStart || !selectedEnd || selectedRooms.length === 0 || isExecuting"
+          class="btn-execute"
+        >
+          <span class="material-symbols-outlined" [ngClass]="{'animate-spin': isExecuting}">{{isExecuting ? 'refresh' : 'bolt'}}</span>
+          {{isExecuting ? 'Processing Batch...' : 'Execute Bulk Update'}}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (isExecuting) {
+    <div class="progress-section animate-in zoom-in-95">
+      <div class="progress-header">
+        <span>Updating {{selectedRooms.length}} room types for {{calculateDays}} days...</span>
+        <span>{{progress}}% Complete</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" [style.width.%]="progress"></div>
+      </div>
+    </div>
+  }
+
+  @if (showComplete) {
+    <div class="success-message animate-in slide-in-from-top-6">
+      <div class="success-content">
+        <span class="material-symbols-outlined success-icon text-3xl">task_alt</span>
+        <div class="success-text text-lg">Update successfully deployed to all nodes. Inventory synchronized.</div>
+      </div>
+      <button (click)="showComplete=false" class="btn-close">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  }
+
+  <div class="main-grid">
+    <!-- Mobile Sidebar Toggle -->
+    <button (click)="toggleSidebar()" class="sidebar-toggle-btn">
+      <span class="material-symbols-outlined">menu</span>
+      <span>Summary</span>
+    </button>
+    
+    <div class="main-content">
+      
+      <!-- Step 1: Range -->
+      <section class="step-section">
+        <div class="step-header">
+          <h3 class="step-title">
+            <span class="step-number">1</span>
+            Define Date Range
+          </h3>
+          @if (selectedStart && selectedEnd) {
+            <span class="step-info">
+              {{calculateDays}} Days Selected
+            </span>
+          }
+        </div>
+        
+        <div class="date-range-content">
+          <div class="months-grid">
+            <div class="month-column">
+              <h4 class="month-title">October 2026</h4>
+              <div class="weekdays-grid">
+                @for (d of ['S','M','T','W','T','F','S']; track $index) {
+                  <span class="weekday-label">{{d}}</span>
+                }
+              </div>
+              <div class="days-grid">
+                @for (day of getDaysArray(31); track day) {
+                  <div 
+                    (click)="handleDayClick(day)"
+                    class="day-cell"
+                    [ngClass]="{
+                      'in-range': isInRange(day),
+                      'selected-start': selectedStart === day,
+                      'selected-end': selectedEnd === day,
+                      'default': !isInRange(day) && selectedStart !== day && selectedEnd !== day
+                    }"
+                  >
+                    {{day}}
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="month-column opacity-25">
+              <h4 class="month-title">November 2026</h4>
+              <div class="weekdays-grid">
+                @for (d of ['S','M','T','W','T','F','S']; track $index) {
+                  <span class="weekday-label">{{d}}</span>
+                }
+              </div>
+              <div class="days-grid">
+                @for (day of getDaysArray(30); track day) {
+                  <div class="day-cell">{{day}}</div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Rooms -->
+      <section class="step-section">
+        <div class="step-header">
+          <h3 class="step-title">
+            <span class="step-number">2</span>
+            Identify Inventory Units
+          </h3>
+        </div>
+        <div class="rooms-content">
+          @for (room of roomsData; track room.name) {
+            <div 
+              (click)="toggleRoom(room.name)"
+              class="room-card"
+              [ngClass]="selectedRooms.includes(room.name) ? 'selected' : ''"
+            >
+              <div class="room-info">
+                <div class="room-image"
+                  [ngClass]="selectedRooms.includes(room.name) ? 'selected' : ''"
+                  [style.backgroundImage]="'url(' + room.image + ')'"
+                ></div>
+                <div class="room-checkbox"
+                  [ngClass]="selectedRooms.includes(room.name) ? 'selected' : ''"
+                >
+                  @if (selectedRooms.includes(room.name)) {
+                    <span class="material-symbols-outlined text-[14px] font-black">check</span>
+                  }
+                </div>
+                <div>
+                  <p 
+                    class="room-name"
+                    [ngClass]="selectedRooms.includes(room.name) ? 'selected' : ''"
+                  >{{room.name}}</p>
+                  <p class="room-count">{{room.count}} Total Units</p>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Step 3: Parameters -->
+      <section class="step-section">
+        <div class="step-header">
+          <h3 class="step-title">
+            <span class="step-number">3</span>
+            Parameter Definitions
+          </h3>
+        </div>
+        <div class="parameters-content">
+          <div class="parameter-types">
+            @for (type of parameterTypes; track type.id) {
+              <button 
+                (click)="setUpdateType(type.id)"
+                class="parameter-button"
+                [ngClass]="updateType === type.id ? 'selected' : ''"
+              >
+                <span class="parameter-icon">{{type.icon}}</span>
+                <span class="parameter-label">{{type.label}}</span>
+              </button>
+            }
+          </div>
+
+          <div class="parameter-input-section">
+            <label class="parameter-label-text">Enter New Value</label>
+            @if (updateType === 'status') {
+              <div class="status-options">
+                @for (s of statusOptions; track s) {
+                  <button 
+                    (click)="setStatusValue(s)"
+                    class="status-button"
+                    [ngClass]="statusValue === s ? 'selected' : ''"
+                  >
+                    {{s}}
+                  </button>
+                }
+              </div>
+            } @else {
+              <div class="parameter-input-container">
+                <input 
+                  type="number"
+                  [(ngModel)]="updateValue"
+                  class="parameter-input"
+                />
+                <span class="input-suffix">
+                  {{updateType === 'rate' ? 'SAR' : 'UNITS'}}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Sidebar Summary -->
+    <div class="sidebar-summary" [class.mobile-open]="isSidebarOpen">
+      <div class="sidebar-content">
+          <!-- Mobile Close Button -->
+          <button (click)="toggleSidebar()" class="sidebar-close-btn-mobile">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+          
+          <div class="sidebar-header">
+            <div class="flex items-center gap-4">
+              <span class="material-symbols-outlined text-primary text-3xl">analytics</span>
+              <h2 class="sidebar-title">Transaction Summary</h2>
+            </div>
+          </div>
+
+          <div class="summary-sections">
+            <div class="summary-section">
+              <p class="summary-label">Active Batch</p>
+              <div class="summary-value">
+                <span class="summary-days">{{calculateDays}}</span>
+                <span class="summary-slots">Total Calendar Slots</span>
+              </div>
+              <p class="summary-date-range">
+                <span class="material-symbols-outlined text-sm">event</span>
+                Oct {{selectedStart || '??'}} to Oct {{selectedEnd || '??'}}, 2026
+              </p>
+            </div>
+
+            <div class="h-px bg-white/10"></div>
+
+            <div class="summary-section">
+              <p class="summary-label">Target Inventory</p>
+              <div class="target-rooms">
+                @if (selectedRooms.length > 0) {
+                  @for (room of selectedRooms; track room) {
+                    <span class="target-room">
+                      {{room}}
+                    </span>
+                  }
+                } @else {
+                  <p class="text-xs text-slate-500 italic">Awaiting selection...</p>
+                }
+              </div>
+            </div>
+
+            <div class="update-logic">
+              <p class="update-logic-header">Update Logic</p>
+              <div class="update-logic-content">
+                <span class="update-logic-icon">
+                  {{updateType === 'rate' ? 'attach_money' : updateType === 'allotment' ? 'view_module' : 'verified'}}
+                </span>
+                <div>
+                  <p class="update-logic-type">Set {{updateType}}</p>
+                  <p class="update-logic-value">
+                    {{updateType === 'status' ? statusValue : `${updateValue} ${updateType === 'rate' ? 'SAR' : 'Units'}`}}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button 
+              (click)="handleBulkUpdate()"
+              [disabled]="calculateDays === 0 || selectedRooms.length === 0 || isExecuting"
+              class="commit-button"
+            >
+              Commit Batch Update
+              <span class="material-symbols-outlined font-black group-hover:translate-x-2 transition-transform">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <p class="info-text">
+            <span class="info-icon">verified_user</span>
+            <span>Updates are distributed across all OTA channels via Channel Manager API. Expect a 60-second propagation window.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>

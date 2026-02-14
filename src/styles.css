@@ -1,0 +1,40 @@
+@import "tailwindcss";
+/* Tailwind CSS example + custom global styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark mode class strategy - Light mode default */
+:root {
+  --bg-light: #f9fafb;
+  --bg-dark: #1e293b;
+  --text-light: #1f2937;
+  --text-dark: #f1f5f9;
+}
+
+/* Default to light mode */
+html, body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-light);
+  color: var(--text-light);
+}
+
+/* Dark mode styles */
+.dark html,
+.dark body {
+  background-color: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+/* Scrollbar customization */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 100, 100, 0.3);
+  border-radius: 3px;
+}

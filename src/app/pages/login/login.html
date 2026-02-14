@@ -1,0 +1,221 @@
+<div class="login-container" 
+     [class.flex-row-reverse]="isRtl" 
+     [class.flex-row]="!isRtl"
+     [dir]="isRtl ? 'rtl' : 'ltr'">
+  
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="hero-image" 
+      [style.backgroundImage]="'url(https://lh3.googleusercontent.com/aida-public/AB6AXuCYc19Jk-LBJg6ilFqtpiFZgMKXxs5NMpIp8dm0LgPG_c16m_aEX5cPqQ8RfpwMeQ0N9Xo0UmtFMlIXAozIHO3_JG3971Fa30JNQsMwYhtXwTFOeioDsuUYVdjY7-FUTcaFhT7Ljb4TYe20d3oWAnnQhS-EzvPZKaxAVvw0VAO1HNuqA-Ev7rI5ZJmXk1AyRk0IxRZTrMVbLQL-362B_gQXvT2v-gmQYP9T2R2vuBjJiKznMPf3QakhBURXUeODvep5uYb8g33YR8E)'">
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content login-hero-content">
+      <div class="logo-section">
+        <div class="logo-icon">
+          <span class="material-symbols-outlined">apartment</span>
+        </div>
+        <span class="logo-text">{{ getTranslation('systemName') }}</span>
+      </div>
+      <div class="hero-description">
+        <h1 class="hero-title">{{ getTranslation('heroTitle') }}</h1>
+        <p class="hero-subtitle">{{ getTranslation('heroSub') }}</p>
+      </div>
+      <div class="hero-footer">
+        <span class="material-symbols-outlined">verified</span>
+        {{ getTranslation('heroFooter') }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Form Section -->
+<div class="login-form-section">
+    <div class="login-form-container login-form-content">
+      <!-- Mobile Header -->
+      <div class="mobile-header" 
+           [class.flex-row-reverse]="isRtl">
+        <div class="mobile-logo">
+          <span class="material-symbols-outlined">hotel</span>
+        </div>
+        <h2 class="mobile-title">{{ getTranslation('management') }}</h2>
+      </div>
+      
+      <!-- Welcome Section -->
+      <div class="welcome-section" [class.text-right]="isRtl">
+        <h2 class="welcome-title">
+          {{ getTranslation('welcomeBack') }}
+        </h2>
+        <p class="welcome-subtitle">
+          {{ getTranslation('credentialsPrompt') }}
+        </p>
+      </div>
+
+      <!-- Login Form -->
+      <form class="login-form" (ngSubmit)="onSubmit($event)">
+        <!-- Role Selection -->
+        <div class="role-selector">
+          <div class="role-selector-slider" 
+            [style.transform]="getRoleSelectorTransform()">
+          </div>
+          <button 
+            type="button" 
+            (click)="setRole('admin')"
+            class="role-button role-button-admin"
+            [class.active]="role === 'admin'">
+            {{ getTranslation('roleManager') }}
+          </button>
+          <button 
+            type="button" 
+            (click)="setRole('user')"
+            class="role-button role-button-user"
+            [class.active]="role === 'user'">
+            {{ getTranslation('roleStaff') }}
+          </button>
+        </div>
+
+        <!-- Email Input -->
+        <div class="input-group">
+          <label class="input-label">
+            {{ getTranslation('emailLabel') }}
+          </label>
+          <input 
+            class="input-field"
+            [class.text-right]="isRtl"
+            [class.text-left]="!isRtl"
+            [placeholder]="getTranslation('emailPlaceholder')"
+            type="email"
+            required
+            [(ngModel)]="email"
+            name="email">
+        </div>
+
+        <!-- Password Input -->
+        <div class="input-group">
+          <label class="input-label">
+            {{ getTranslation('passwordLabel') }}
+          </label>
+          <div class="password-input-container">
+            <input 
+              class="input-field"
+              [class.pl-12]="isRtl"
+              [class.pr-12]="!isRtl"
+              [class.pr-[15px]]="isRtl"
+              [class.pl-[15px]]="!isRtl"
+              [class.text-right]="isRtl"
+              [class.text-left]="!isRtl"
+              [placeholder]="getTranslation('passwordPlaceholder')"
+              [type]="showPassword ? 'text' : 'password'"
+              required
+              [(ngModel)]="password"
+              name="password">
+            <button 
+              class="password-toggle"
+              [class.left-4]="isRtl"
+              [class.right-4]="!isRtl"
+              type="button"
+              (click)="togglePasswordVisibility()">
+              <span class="material-symbols-outlined">
+                {{ showPassword ? 'visibility_off' : 'visibility' }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember Me & Forgot Password -->
+        <div class="remember-section"
+             [class.flex-row-reverse]="isRtl">
+          <label class="remember-label"
+                 [class.flex-row-reverse]="isRtl">
+            <input class="remember-checkbox" 
+                   type="checkbox"
+                   [(ngModel)]="rememberMe"
+                   name="rememberMe">
+            <span class="remember-text">
+              {{ getTranslation('rememberMe') }}
+            </span>
+          </label>
+          <a class="forgot-password" href="#">
+            {{ getTranslation('forgotPassword') }}
+          </a>
+        </div>
+
+        <!-- Submit Button -->
+        <button class="submit-button" 
+                type="submit">
+          <span class="submit-text">
+            {{ getTranslation('signIn') }} {{ role === 'admin' ? '(Admin)' : '(Staff)' }}
+          </span>
+        </button>
+      </form>
+
+      <!-- Request Access -->
+      <div class="request-access">
+        <p class="request-text">
+          {{ getTranslation('newTeamMember') }}
+          <a class="request-link"
+             [class.mr-1]="isRtl"
+             [class.ml-1]="!isRtl"
+             href="#">
+            {{ getTranslation('requestAccess') }}
+          </a>
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-content"
+             [class.flex-row-reverse]="isRtl">
+          
+          <!-- Support Button -->
+          <button 
+            type="button"
+            (click)="handleSupportClick()"
+            class="support-button">
+            <span class="material-symbols-outlined">
+              support_agent
+            </span>
+            {{ getTranslation('contactSupport') }}
+          </button>
+
+          <!-- Language Selector -->
+          <div class="language-selector">
+            <button 
+              type="button"
+              (click)="toggleLanguageMenu()"
+              class="language-button"
+              [class.bg-slate-50]="isLangMenuOpen"
+              [class.bg-slate-800]="isLangMenuOpen">
+              <span class="material-symbols-outlined">
+                language
+              </span>
+              {{ currentLanguage }}
+              <span class="material-symbols-outlined expand-icon"
+                    [class.rotate-180]="isLangMenuOpen">
+                expand_more
+              </span>
+            </button>
+
+            <!-- Language Dropdown -->
+            @if (isLangMenuOpen) {
+              <div class="language-dropdown">
+                @for (lang of availableLanguages; track lang) {
+                  <button
+                    type="button"
+                    (click)="selectLanguage(lang)"
+                    class="language-option"
+                    [class.active]="currentLanguage === lang"
+                    [dir]="lang === 'Arabic (KSA)' ? 'rtl' : 'ltr'"
+                    [class.flex-row-reverse]="lang === 'Arabic (KSA)'">
+                    {{ lang }}
+                    @if (currentLanguage === lang) {
+                      <span class="material-symbols-outlined check-icon">check</span>
+                    }
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

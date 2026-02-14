@@ -1,0 +1,274 @@
+<div #container [class.dark]="darkMode" [class.text-right]="isRtl" [class.text-left]="!isRtl" class="analytics-container analytics-space-y-8">
+  <!-- Toast -->
+  @if (showSuccess) {
+    <div class="toast">
+      <span class="material-symbols-outlined">check_circle</span>
+      Operation Completed Successfully
+    </div>
+  }
+
+  <!-- Processing Overlay -->
+  @if (isProcessing) {
+    <div class="processing-overlay backdrop-blur">
+      <div class="processing-modal">
+        <span class="material-symbols-outlined animate-spin text-primary text-5xl">refresh</span>
+        <p class="font-black text-slate-800 dark:text-white">Processing your request...</p>
+      </div>
+    </div>
+  }
+
+  <!-- Header with Date Filters -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="header-title">
+        <h1 class="text-2xl font-bold dark:text-white">Hotel Performance Analytics</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Key metrics and reporting for residential units</p>
+      </div>
+      <div class="header-actions">
+        <button (click)="handleAction('export')" class="btn">
+          <span class="material-symbols-outlined text-lg">file_download</span>
+          <span>Export</span>
+        </button>
+        <button (click)="handleAction('report')" class="btn">
+          Generate Report
+        </button>
+      </div>
+    </div>
+    <div class="date-filters">
+      <input type="date" class="date-picker-trigger">
+      <select class="select-dropdown" (change)="onRoomTypeChange($event)">
+        <option *ngFor="let type of roomTypes" [value]="type" [selected]="type === selectedRoomType">{{ type }}</option>
+      </select>
+      <select class="select-dropdown" (change)="onComparisonChange($event)">
+        <option *ngFor="let comp of comparisons" [value]="comp" [selected]="comp === selectedComparison">{{ comp }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Enhanced Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">RevPAR</span>
+        <span class="material-symbols-outlined stat-icon indigo">payments</span>
+      </div>
+      <div class="stat-value">
+        <span class="amount text-2xl font-bold dark:text-white">SAR 425.20</span>
+        <span class="stat-trend positive text-xs font-medium">
+          <span class="material-symbols-outlined text-sm">trending_up</span> 12.5%
+        </span>
+      </div>
+      <p class="stat-description">Revenue Per Available Room</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">ADR</span>
+        <span class="material-symbols-outlined stat-icon orange">equalizer</span>
+      </div>
+      <div class="stat-value">
+        <span class="amount text-2xl font-bold dark:text-white">SAR 680.00</span>
+        <span class="stat-trend positive text-xs font-medium">
+          <span class="material-symbols-outlined text-sm">trending_up</span> 4.2%
+        </span>
+      </div>
+      <p class="stat-description">Average Daily Rate</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">Occupancy</span>
+        <span class="material-symbols-outlined stat-icon blue">bed</span>
+      </div>
+      <div class="stat-value">
+        <span class="amount text-2xl font-bold dark:text-white">78.4%</span>
+        <span class="stat-trend negative text-xs font-medium">
+          <span class="material-symbols-outlined text-sm">trending_down</span> 2.1%
+        </span>
+      </div>
+      <p class="stat-description">Units currently booked</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <span class="stat-label">Total Revenue</span>
+        <span class="material-symbols-outlined stat-icon emerald">account_balance_wallet</span>
+      </div>
+      <div class="stat-value">
+        <span class="amount text-2xl font-bold dark:text-white">SAR 142.5K</span>
+        <span class="stat-trend positive text-xs font-medium">
+          <span class="material-symbols-outlined text-sm">trending_up</span> 8.8%
+        </span>
+      </div>
+      <p class="stat-description">Gross booking revenue</p>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-grid">
+    <div class="chart-card span-2">
+      <div class="chart-header">
+        <div class="chart-title">
+          <h3>Occupancy vs. ADR Trends</h3>
+          <p>Correlation over the last 30 days</p>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-dot indigo"></span>
+            <span class="legend-label">ADR</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot emerald"></span>
+            <span class="legend-label">Occupancy</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas #lineChart></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">
+        <h3>Revenue by Channel</h3>
+      </div>
+      <div class="revenue-channels">
+        <div *ngFor="let channel of revenueChannels" class="channel-item">
+          <div class="channel-header">
+            <span class="channel-name">{{ channel.name }}</span>
+            <span class="channel-percentage">{{ channel.percentage }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill {{ channel.color }}" [style.width]="channel.percentage + '%'"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-500">Total Bookings</span>
+          <span class="text-sm font-bold dark:text-white">{{ totalBookings.toLocaleString() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Table -->
+  <div class="table-container">
+    <div class="table-header">
+      <div class="table-title">Performance by Room Category</div>
+      <button class="table-link" (click)="viewDetailedReport()">
+        View Detailed Report <span class="material-symbols-outlined text-sm">arrow_forward</span>
+      </button>
+    </div>
+    <div class="table-wrapper">
+      <table class="performance-table">
+        <thead class="table-head">
+          <tr>
+            <th>Room Type</th>
+            <th>Avg Occupancy</th>
+            <th>Avg Daily Rate</th>
+            <th>RevPAR</th>
+            <th>Cancellations</th>
+            <th>Revenue</th>
+            <th class="table-cell-right">Trend</th>
+          </tr>
+        </thead>
+        <tbody class="table-body">
+          <tr *ngFor="let room of roomPerformanceData">
+            <td class="table-cell-bold">{{ room.roomType }}</td>
+            <td class="table-cell-bold">{{ room.occupancy }}</td>
+            <td class="table-cell-bold">{{ room.adr }}</td>
+            <td class="table-cell-bold">{{ room.revpar }}</td>
+            <td>
+              <span class="status-badge"
+                    [class]="room.cancellations === '4.2%' ? 'amber' :
+                               room.cancellations === '1.5%' ? 'emerald' :
+                               'rose'">
+                {{ room.cancellations }}
+              </span>
+            </td>
+            <td class="table-cell-bold">{{ room.revenue }}</td>
+            <td class="table-cell-right">
+              <span class="material-symbols-outlined trend-icon"
+                    [class]="room.trend === 'up' ? 'up' : 'down'">
+                {{ room.trend === 'up' ? 'trending_up' : 'trending_down' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Date Picker Modal -->
+@if (showDatePicker) {
+  <div class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Select Date Range</div>
+        <button (click)="closeDatePicker()" class="modal-close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div class="calendar-nav">
+        <button (click)="previousMonth()">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <div class="calendar-month">
+          {{ currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) }}
+        </div>
+        <button (click)="nextMonth()">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+        
+        <div class="calendar-weekdays">
+          <div>Sun</div>
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
+        </div>
+        
+        <div class="calendar-days">
+          @for (day of getDaysInMonth(); track day) {
+            <button 
+              (click)="selectDate(day)"
+              [class]="{
+                'calendar-day': true,
+                'default': !isDateSelected(day) && !isDateInRange(day),
+                'selected': isDateSelected(day),
+                'in-range': isDateInRange(day),
+                'other-month': day.getMonth() !== currentMonth.getMonth()
+              }">
+              {{ day.getDate() }}
+            </button>
+          }
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <div class="date-range-display">
+          <div class="date-range-item">
+            <div class="date-range-label">From:</div>
+            <div class="date-range-value">{{ startDate ? formatDate(startDate) : 'Select date' }}</div>
+          </div>
+          <div class="date-range-item">
+            <div class="date-range-label">To:</div>
+            <div class="date-range-value">{{ endDate ? formatDate(endDate) : 'Select date' }}</div>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button (click)="closeDatePicker()" class="modal-btn cancel">
+            Cancel
+          </button>
+          <button (click)="updateDateRange()" [disabled]="!startDate || !endDate" 
+                  class="modal-btn apply">
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+}

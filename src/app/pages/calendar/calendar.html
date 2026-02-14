@@ -1,0 +1,188 @@
+<div class="calendar-container">
+  <!-- Header -->
+  <header class="calendar-header">
+    <div class="calendar-title">
+      <h1 class="text-4xl font-black tracking-tight">Inventory Calendar</h1>
+    </div>
+    
+    <div class="search-section">
+      <!-- Search Input -->
+      <div class="search-container">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input 
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          class="search-input"
+          placeholder="Filter rooms..."
+        />
+      </div>
+      
+
+    </div>
+  </header>
+
+  <!-- Control Bar -->
+  <div class="control-bar">
+    
+    <!-- Month Navigation -->
+    <div class="month-navigation">
+      <button (click)="handlePrevMonth()" class="nav-button prev">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      
+      <span class="month-label">
+        {{ getRangeLabel() }}
+      </span>
+      
+      <button (click)="handleNextMonth()" class="nav-button next">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+  
+    <!-- View Toggle -->
+    <div class="view-toggle">
+      <div class="toggle-container">
+        <button class="toggle-button">
+          Table
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="calendar-grid">
+    <div class="calendar-scroll-container custom-scrollbar">
+      <div class="calendar-content">
+        
+        <!-- Header Row -->
+        <div class="header-row">
+          <!-- Room Summary Header -->
+          <div class="room-summary-header">
+            <span class="room-summary-label">Unit Summary</span>
+          </div>
+          
+          <!-- Dates Header -->
+          <div class="dates-header">
+            <div *ngFor="let date of timelineDates; let i = index" 
+                 [class]="getDateHeaderClass(date)" class="date-header">
+              <span class="weekday-label">
+                {{ getWeekday(date) }}
+              </span>
+              <span class="date-number">{{ date.getDate() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rooms Rows -->
+        <div class="calendar-rows">
+          <div *ngFor="let room of filteredRooms" class="calendar-row">
+            
+            <!-- Room Info Column -->
+            <div [class]="getRoomInfoClass(room.id)"
+                 class="room-info">
+              <div>
+                <div class="room-header" 
+                     (click)="toggleExpand(room.id)">
+                  <span class="material-symbols-outlined expand-icon"
+                        [class]="isRoomExpanded(room.id) ? 'rotated' : ''">
+                    expand_more
+                  </span>
+                  <h3 class="room-name">
+                    {{ room.name }}
+                  </h3>
+                </div>
+                <div class="room-id">
+                  <span class="room-id-badge">
+                    ID: {{ room.id }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Calendar Data -->
+            <div class="calendar-data">
+              <ng-container *ngIf="isRoomExpanded(room.id); else collapsedView">
+                <!-- Status Row -->
+                <div class="status-row">
+                  <div *ngFor="let date of timelineDates; let i = index" 
+                       [class]="getStatusCellClass(room, date)"
+                       class="status-cell">
+                    <span class="status-text">
+                      {{ getStatusText(room, date) }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Allotment Row -->
+                <div class="allotment-row">
+                  <div *ngFor="let date of timelineDates; let i = index" 
+                       (click)="startEdit(room.id, formatDateKey(date), 'allotment', getAllotment(room, date))"
+                       [class]="getAllotmentCellClass(room, date)"
+                       class="allotment-cell">
+                    <span class="allotment-label">
+                      ALLOT
+                    </span>
+                    <span class="allotment-value">{{ getAllotment(room, date) }}</span>
+                  </div>
+                </div>
+                
+                <!-- Rate Row -->
+                <div class="rate-row">
+                  <div *ngFor="let date of timelineDates; let i = index" 
+                       (click)="startEdit(room.id, formatDateKey(date), 'rate', getRate(room, date))"
+                       class="rate-cell">
+                    <span class="rate-label">
+                      RATE
+                    </span>
+                    <span class="rate-value">
+                      {{ getRate(room, date) }}
+                    </span>
+                  </div>
+                </div>
+              </ng-container>
+              
+              <ng-template #collapsedView>
+                <div class="collapsed-view">
+                  <p class="collapsed-text">
+                    Details collapsed
+                  </p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Edit Modal -->
+  <div *ngIf="editingCell" 
+       class="modal-overlay fade-in animate-in"
+       (click)="closeModal($event)">
+    <div class="modal zoom-in-95 animate-in">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          Edit {{ editingCell.field }}
+        </h3>
+        <button (click)="cancelEdit()" class="modal-close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div class="modal-content">
+        <input 
+          #editInput
+          type="number" 
+          [(ngModel)]="tempValue"
+          (keydown.enter)="saveEdit()"
+          class="modal-input"
+          autofocus
+        />
+        <button (click)="saveEdit()" 
+                class="modal-save-button">
+          Update Entry
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

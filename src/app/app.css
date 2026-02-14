@@ -1,0 +1,22 @@
+/* Sidebar Links */
+a.active {
+  font-weight: bold;
+  background-color: #1e293b;
+}
+
+aside {
+  transition: all 0.3s ease;
+}
+
+aside a {
+  transition: background-color 0.2s;
+}
+
+main {
+  transition: background-color 0.3s;
+}
+
+/* Dark mode */
+body.dark main {
+  background-color: #1e293b;
+}

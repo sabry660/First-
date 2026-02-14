@@ -1,0 +1,115 @@
+<div class="app-shell-container" [class.font-arabic]="lang.isRtl">
+  <div class="top-controls">
+    
+    <button (click)="toggleLanguage()" class="language-toggle-btn">
+      <span class="material-symbols-outlined text-lg">{{ lang.language === 'en' ? 'translate' : 'language' }}</span>
+      <span class="font-semibold">{{ lang.language === 'en' ? 'عربي' : 'EN' }}</span>
+    </button>
+
+    <button routerLink="/app/notifications" 
+      class="notification-btn">
+      <span class="material-symbols-outlined text-2xl">notifications</span>
+      <span class="notification-badge">
+        <span class="notification-badge-ping"></span>
+        <span class="notification-badge-dot"></span>
+      </span>
+    </button>
+    <!-- dark mode toggle -->
+    <button (click)="toggleLanguage()" class="dark-toggle-btn">
+      
+
+ 
+
+    </button>
+  </div>
+  <!-- Backdrop mobile -->
+  <div *ngIf="isSidebarOpen" class="mobile-backdrop" (click)="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside #sidebar class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-profile" (click)="navigateToProfile()">
+        <div class="sidebar-avatar">GS</div>
+        <div>
+          <h1 class="sidebar-title">Grand Stay Pro</h1>
+          <p class="sidebar-subtitle">{{ t('inventorySystem') }}</p>
+        </div>
+      </div>
+      <button class="sidebar-close-btn" (click)="toggleSidebar()">✕</button>
+    </div>
+
+    <nav class="sidebar-nav custom-scrollbar">
+      <a routerLink="/app/calendar" routerLinkActive="active" class="sidebar-link">
+        <span class="sidebar-icon"></span>
+        <span class="sidebar-text">{{ t('inventoryCalendar') }}</span>
+      </a>
+      <a routerLink="/app/dashboard" routerLinkActive="active" class="sidebar-link">
+        <span class="sidebar-icon"></span>
+        <span class="sidebar-text">{{ t('performanceOverview') }}</span>
+      </a>
+      <a routerLink="/app/reservations" routerLinkActive="active" class="sidebar-link">
+        <span class="sidebar-icon"></span>
+        <span class="sidebar-text">{{ t('reservations') }}</span>
+      </a>
+         <a routerLink="/app/analytics" routerLinkActive="active" class="sidebar-link">
+        <span class="sidebar-icon"></span>
+        <span class="sidebar-text">{{ t('Analytics') }}</span>
+      </a>
+
+      <ng-container *ngIf="isAdmin">
+        <div class="sidebar-section">
+          <div class="sidebar-section-header">{{ t('inventoryTitle') }}</div>
+          <a routerLink="/app/bulk-updates" routerLinkActive="active" class="sidebar-link">
+            <span class="sidebar-icon"></span>
+            <span class="sidebar-text">{{ t('bulkUpdates') }}</span>
+          </a>
+          <a routerLink="/app/rates" routerLinkActive="active" class="sidebar-link">
+            <span class="sidebar-icon"></span>
+            <span class="sidebar-text">{{ t('rateManagement') }}</span>
+          </a>
+        </div>
+      </ng-container>
+
+  
+
+      <ng-container *ngIf="isAdmin">
+        <div class="sidebar-section">
+          <a routerLink="/app/promotions" routerLinkActive="active" class="sidebar-link">
+            <span class="sidebar-icon"></span>
+            <span class="sidebar-text">{{ t('promotions') }}</span>
+          </a>
+          <a routerLink="/app/staff" routerLinkActive="active" class="sidebar-link">
+            <span class="sidebar-icon"></span>
+            <span class="sidebar-text">{{ t('staffManagement') }}</span>
+          </a>
+          <a routerLink="/app/profile" routerLinkActive="active" class="sidebar-link">
+            <span class="sidebar-icon"></span>
+            <span class="sidebar-text">{{ t('profileSettings') }}</span>
+          </a>
+          <a routerLink="/app/settings" routerLinkActive="active" class="sidebar-link">
+            <span class="sidebar-icon"></span>
+            <span class="sidebar-text">{{ t('systemSettings') }}</span>
+          </a>
+              <a routerLink="/app/notifications" routerLinkActive="active" class="sidebar-link">
+            <span class="sidebar-icon"></span>
+            <span class="sidebar-text">{{ t('Notifications') }}</span>
+          </a>
+        </div>
+      </ng-container>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button (click)="signOut()" class="sign-out-btn">
+        <span class="material-symbols-outlined">logout</span>
+        <span>Sign Out</span>
+      </button>
+      <button (click)="toggleLanguage()" class="dark-toggle-btn">
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
